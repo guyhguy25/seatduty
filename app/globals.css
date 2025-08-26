@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Fallback icon styles for team logos */
+.fallback-icon {
+  display: none;
+}
+
+/* Show fallback when image fails to load */
+img[src*="365scores"]:not([src*="default1.png"]) + .fallback-icon {
+  display: flex;
+}
+
+/* Hide fallback when image loads successfully */
+img[src*="365scores"]:not([src*="default1.png"]):not([src*="error"]) ~ .fallback-icon {
+  display: none;
+}
