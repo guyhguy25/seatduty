@@ -2,7 +2,7 @@ export async function GET() {
     try {
       console.log("Attempting to fetch users from API...");
       
-      const response = await fetch("http://localhost:5000/users", {
+      const response = await fetch("http://backend:5000/users", {
         cache: "no-store", // prevent caching
         signal: AbortSignal.timeout(10000), // 10 second timeout
       });

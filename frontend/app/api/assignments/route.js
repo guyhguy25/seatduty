@@ -4,7 +4,7 @@ export async function GET() {
       
       // Use localhost since n8n.localhost is only resolvable from the browser
       // const response = await fetch("http://localhost:5678/webhook/game-assignments", {
-      const response = await fetch("http://localhost:5000/webhook", {
+      const response = await fetch("http://backend:5000/webhook", {
         cache: "no-store", // prevent caching
         // Add timeout and other fetch options
         signal: AbortSignal.timeout(10000), // 10 second timeout

@@ -2,7 +2,7 @@ export async function GET() {
     try {
       console.log("Attempting to fetch assignments from API...");
       
-      const response = await fetch("http://localhost:5000/assignments", {
+      const response = await fetch("http://backend:5000/assignments", {
         cache: "no-store", // prevent caching
         signal: AbortSignal.timeout(10000), // 10 second timeout
       });
