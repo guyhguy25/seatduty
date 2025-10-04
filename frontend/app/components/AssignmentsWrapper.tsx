@@ -3,27 +3,24 @@
 import { useState, useEffect } from "react";
 import GameCard from "./GameCard";
 import RefreshButton from "./RefreshButton";
+import { Root } from "../types/game";
 
-interface Game {
-  id: number;
-  game_id: string;
-  start_time: string;
-  home_team: string;
-  away_team: string;
-  homeId: string;
-  awayId: string;
-  assigned_group: string;
-  created_at: string;
+interface AssignmentsWrapperProps {
+  initialAssignments: Root[];
 }
 
-export default function AssignmentsWrapper() {
-  const [assignments, setAssignments] = useState<Game[] | null>(null);
+export default function AssignmentsWrapper({ initialAssignments }: AssignmentsWrapperProps) {
+  const [assignments, setAssignments] = useState<Root[]>(initialAssignments);
   const [error, setError] = useState<{ error: string } | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   async function loadAssignments() {
     setError(null);
+    setIsRefreshing(true);
     try {
-      const res = await fetch("/api/assignments");
+      const res = await fetch("/api/assignments", {
+        cache: 'no-store', // Always fetch fresh data on refresh
+      });
       const data = await res.json();
       if (res.ok) {
         setAssignments(data);
@@ -32,13 +29,10 @@ export default function AssignmentsWrapper() {
       }
     } catch (err) {
       setError({ error: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsRefreshing(false);
     }
   }
-
-  // Load assignments on component mount
-  useEffect(() => {
-    loadAssignments();
-  }, []);
 
   return (
     <>
@@ -69,7 +63,7 @@ export default function AssignmentsWrapper() {
 
       {/* Refresh Button */}
       <div className="flex justify-center mt-6 mb-4">
-        <RefreshButton onRefresh={loadAssignments} />
+        <RefreshButton onRefresh={loadAssignments} isLoading={isRefreshing} />
       </div>
     </>
   );

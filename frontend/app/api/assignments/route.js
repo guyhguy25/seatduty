@@ -3,7 +3,8 @@ export async function GET() {
       console.log("Attempting to fetch from n8n webhook...");
       
       // Use localhost since n8n.localhost is only resolvable from the browser
-      const response = await fetch("http://localhost:5678/webhook/game-assignments", {
+      // const response = await fetch("http://localhost:5678/webhook/game-assignments", {
+      const response = await fetch("http://localhost:5000/webhook", {
         cache: "no-store", // prevent caching
         // Add timeout and other fetch options
         signal: AbortSignal.timeout(10000), // 10 second timeout
@@ -25,7 +26,18 @@ export async function GET() {
   
       const data = await response.json();
       console.log("Successfully fetched data:", data);
-      return new Response(JSON.stringify(data), { status: 200 });
+      
+      // The external API might return data in a different structure
+      // Handle both direct array and nested data structure
+      const gameData = Array.isArray(data) ? data : (data.data || data.games || []);
+      
+      return new Response(JSON.stringify(gameData), { 
+        status: 200,
+        headers: {
+          'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=300',
+          'Content-Type': 'application/json',
+        }
+      });
     } catch (err) {
       console.error("Fetch error details:", err);
       return new Response(JSON.stringify({ 

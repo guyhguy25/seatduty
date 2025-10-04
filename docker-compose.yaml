@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: seat-duty-db
+    environment:
+      POSTGRES_DB: seatduty
+      POSTGRES_USER: seatduty_user
+      POSTGRES_PASSWORD: seatduty_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - seat-duty-network
+
+  backend:
+    build: ./backend
+    container_name: seat-duty-backend
+    depends_on:
+      - postgres
+    environment:
+      FLASK_ENV: production
+      DATABASE_URL: postgresql://seatduty_user:seatduty_password@postgres:5432/seatduty
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    networks:
+      - seat-duty-network
+
+  frontend:
+    build: ./frontend
+    container_name: seat-duty-frontend
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://localhost:5000  # Or use your domain later
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - seat-duty-network
+
+volumes:
+  postgres_data:
+
+networks:
+  seat-duty-network:
+    driver: bridge

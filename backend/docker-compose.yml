@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  seat-duty-api:
+    build: .
+    container_name: seat-duty-server
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - seat-duty-network
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: seat-duty-db
+    environment:
+      POSTGRES_DB: seatduty
+      POSTGRES_USER: seatduty_user
+      POSTGRES_PASSWORD: seatduty_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - seat-duty-network
+
+  # Redis for caching (optional)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: seat-duty-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+  #   networks:
+  #     - seat-duty-network
+  #   profiles:
+  #     - cache  # Only start when explicitly requested
+
+volumes:
+  postgres_data:
+
+networks:
+  seat-duty-network:
+    driver: bridge
