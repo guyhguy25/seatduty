@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    image: seatduty-backend2:prod
+    container_name: seatduty-backend2-prod
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/seatduty
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - RESET_TOKEN_EXPIRE_HOURS=1
+      - ENVIRONMENT=production
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - seatduty-network
+
+  db:
+    image: postgres:16-alpine
+    container_name: seatduty-db-prod
+    environment:
+      - POSTGRES_DB=seatduty
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - db_prod_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d seatduty"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - seatduty-network
+
+  # Nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: seatduty-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - seatduty-network
+
+volumes:
+  db_prod_data:
+
+networks:
+  seatduty-network:
+    driver: bridge
