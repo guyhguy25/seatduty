@@ -9,12 +9,14 @@ class GroupBase(BaseModel):
 
 
 class GroupCreate(GroupBase):
-    pass
+    club_id: Optional[int] = None
 
 
 class GroupOut(GroupBase):
     id: int
     creator_id: int
+    club_id: Optional[int] = None
+    club: Optional['ClubOut'] = None
 
     class Config:
         from_attributes = True
@@ -52,6 +54,46 @@ class ClubOut(BaseModel):
     external_id: str
     logo: Optional[str] = None
     country: Optional[str] = None
+    country_id: Optional[str] = None
+    competition_id: Optional[str] = None
+    competition_name: Optional[str] = None
+    symbolic_name: Optional[str] = None
+    name_for_url: Optional[str] = None
+    popularity_rank: Optional[int] = None
+    color: Optional[str] = None
+    away_color: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+
+class CountryOut(BaseModel):
+    id: int
+    name: str
+    has_league: bool = False
+
+
+class CompetitionOut(BaseModel):
+    id: int
+    name: str
+    image_path: Optional[str] = None
+    country_id: Optional[int] = None
+    current_season_num: Optional[int] = None
+    current_stage_num: Optional[int] = None
+
+
+class TeamOut(BaseModel):
+    id: int
+    name: str
+    image_url: Optional[str] = None
+    country_name: Optional[str] = None
+    country_id: Optional[int] = None
+    symbolic_name: Optional[str] = None
+    name_for_url: Optional[str] = None
+    popularity_rank: Optional[int] = None
+    color: Optional[str] = None
+    away_color: Optional[str] = None
+
+
+class UpdateGroupClub(BaseModel):
+    club_id: Optional[int] = None

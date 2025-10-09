@@ -115,17 +115,19 @@ Complete redesign of the backend system for seat duty management, including user
 ## 🏟️ Club Association System
 
 ### Club Integration
-- [ ] **Club Management**
-  - Club information database
-  - Home venue details
-  - Season schedules and fixtures
-  - Club settings and preferences
+- [x] **Club Management** ✅ COMPLETED
+  - ✅ Club information database (external_id, name, logo, country, competition)
+  - ✅ 365scores API integration (countries, competitions, teams)
+  - ✅ Caching system (24-hour cache for API responses)
+  - ✅ Club creation from team selection
+  - 📝 See: CLUB_README.md, CLUB_MANAGEMENT.md, FRONTEND_INTEGRATION.md
 
-- [ ] **Group-Club Association**
-  - Admin-only club association
-  - Association approval workflow
-  - Association status tracking
-  - Multiple club support per group
+- [x] **Group-Club Association** ✅ COMPLETED
+  - ✅ Group-Club linking (club_id foreign key)
+  - ✅ Optional club association (nullable club_id)
+  - ✅ Club validation during group creation
+  - ✅ Complete API endpoints and schemas
+  - 📝 Frontend implementation pending (see EXAMPLE_FRONTEND_COMPONENT.tsx)
 
 ## ⚽ Game Management System
 

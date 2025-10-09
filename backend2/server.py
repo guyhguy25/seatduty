@@ -5,6 +5,7 @@ from app.auth.routers import router as auth_router
 from app.users.routers import router as users_router
 from app.admin.routers import router as admin_router
 from app.groups.routers import router as groups_router
+from app.clubs.routers import router as clubs_router
 import time
 import logging
 import os
@@ -71,6 +72,7 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(admin_router)
 app.include_router(groups_router)
+app.include_router(clubs_router)
 
 logger.info("🔒 Test endpoints disabled")
 

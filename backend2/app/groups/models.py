@@ -23,10 +23,12 @@ class Group(Base):
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     creator_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    club_id = Column(Integer, ForeignKey("clubs.id"), nullable=True, index=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     creator = relationship("User")
+    club = relationship("Club")
 
 
 class GroupMember(Base):
@@ -70,4 +72,12 @@ class Club(Base):
     external_id = Column(String(255), nullable=False, index=True)
     logo = Column(Text, nullable=True)
     country = Column(String(255), nullable=True)
+    country_id = Column(String(255), nullable=True)
+    competition_id = Column(String(255), nullable=True)
+    competition_name = Column(String(255), nullable=True)
+    symbolic_name = Column(String(255), nullable=True)
+    name_for_url = Column(String(255), nullable=True)
+    popularity_rank = Column(Integer, nullable=True)
+    color = Column(String(50), nullable=True)
+    away_color = Column(String(50), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)

@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 import secrets
-import requests
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.users.models import User
@@ -10,60 +9,10 @@ from app.groups.models import Group, GroupMember, InvitationToken, Club
 from app.groups.schemas import (
     GroupCreate, GroupOut, GroupMemberOut,
     InvitationCreate, InvitationOut, ClubOut,
+    UpdateGroupClub,
 )
 
 router = APIRouter(prefix="/groups", tags=["groups"])
-
-# Clubs: assign a club to each group creation from provided standings source
-STANDINGS_URL = (
-    "https://webws.365scores.com/web/standings/?appTypeId=5&langId=2&timezoneName=Asia/Jerusalem&userCountryId=6&competitions=42&live=false&withSeasonsFilter=true"
-)
-
-
-def upsert_club(db: Session, name: str, external_id: str, logo: str | None, country: str | None) -> Club:
-    existing = db.query(Club).filter(Club.external_id == external_id).first()
-    if existing:
-        if (existing.logo != logo) or (existing.name != name) or (existing.country != country):
-            existing.name = name
-            existing.logo = logo
-            existing.country = country
-            db.add(existing)
-            db.commit()
-            db.refresh(existing)
-        return existing
-    club = Club(name=name, external_id=external_id, logo=logo, country=country)
-    db.add(club)
-    db.commit()
-    db.refresh(club)
-    return club
-
-
-@router.get("/clubs", response_model=list[ClubOut])
-def fetch_clubs(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    """Fetch clubs from standings source and upsert locally; return all stored clubs."""
-    try:
-        r = requests.get(STANDINGS_URL, timeout=10)
-        r.raise_for_status()
-        data = r.json()
-        standings = data.get("standings", [])
-        # Example structure: standings[0]["rows"][i]["competitor"{"id","name","country",...}]
-        for table in standings:
-            rows = table.get("rows", [])
-            for row in rows:
-                comp = row.get("competitor") or {}
-                external_id = str(comp.get("id")) if comp.get("id") is not None else None
-                name = comp.get("name")
-                logo = comp.get("imageUrl") or comp.get("image")
-                country = (comp.get("country") or {}).get("name") if isinstance(comp.get("country"), dict) else comp.get("country")
-                if external_id and name:
-                    upsert_club(db, name=name, external_id=external_id, logo=logo, country=country)
-    except Exception:
-        # If remote fails, return what we already have
-        pass
-
-    clubs = db.query(Club).all()
-    return clubs
-
 
 @router.post("", response_model=GroupOut, status_code=status.HTTP_201_CREATED)
 def create_group(
@@ -76,7 +25,18 @@ def create_group(
     if created_count >= 2:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Group creation limit reached (2)")
 
-    group = Group(name=payload.name, description=payload.description, creator_id=current_user.id)
+    # Validate club_id if provided
+    if payload.club_id:
+        club = db.query(Club).filter(Club.id == payload.club_id).first()
+        if not club:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Club not found")
+
+    group = Group(
+        name=payload.name, 
+        description=payload.description, 
+        creator_id=current_user.id,
+        club_id=payload.club_id
+    )
     db.add(group)
     db.commit()
     db.refresh(group)
@@ -94,11 +54,18 @@ def list_my_groups(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """List groups where current user is a member."""
+    """List groups where current user is a member, including associated clubs."""
     group_ids = [gm.group_id for gm in db.query(GroupMember).filter(GroupMember.user_id == current_user.id).all()]
     if not group_ids:
         return []
     groups = db.query(Group).filter(Group.id.in_(group_ids)).all()
+    
+    # Load club relationships for all groups
+    for group in groups:
+        if group.club_id:
+            club = db.query(Club).filter(Club.id == group.club_id).first()
+            group.club = club
+    
     return groups
 
 
@@ -108,6 +75,7 @@ def get_group(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Get group details including associated club information."""
     group = db.query(Group).filter(Group.id == group_id).first()
     if group is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Group not found")
@@ -117,6 +85,12 @@ def get_group(
     ).first()
     if member is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a member")
+    
+    # Load the club relationship if exists
+    if group.club_id:
+        club = db.query(Club).filter(Club.id == group.club_id).first()
+        group.club = club
+    
     return group
 
 
@@ -372,3 +346,45 @@ def leave_group(
     db.delete(member)
     db.commit()
     return {"message": "Left group successfully"}
+
+
+@router.patch("/{group_id}/club", response_model=GroupOut)
+def update_group_club(
+    group_id: int,
+    payload: UpdateGroupClub,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update the club associated with a group. Only admins can update."""
+    group = db.query(Group).filter(Group.id == group_id).first()
+    if group is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Group not found")
+    
+    # Check if user is admin
+    member = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == current_user.id,
+        GroupMember.is_admin == True,
+    ).first()
+    if member is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    
+    # Validate club_id if provided
+    if payload.club_id is not None:
+        club = db.query(Club).filter(Club.id == payload.club_id).first()
+        if not club:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Club not found")
+        group.club_id = payload.club_id
+    else:
+        # Allow setting to None (removing club association)
+        group.club_id = None
+    
+    db.commit()
+    db.refresh(group)
+    
+    # Load club relationship if exists
+    if group.club_id:
+        club = db.query(Club).filter(Club.id == group.club_id).first()
+        group.club = club
+    
+    return group
