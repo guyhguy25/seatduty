@@ -4,6 +4,7 @@ from app.core.database import Base, engine
 from app.auth.routers import router as auth_router
 from app.users.routers import router as users_router
 from app.admin.routers import router as admin_router
+from app.groups.routers import router as groups_router
 import time
 import logging
 import os
@@ -17,9 +18,7 @@ log_level = logging.DEBUG if DEBUG else logging.INFO
 logging.basicConfig(level=log_level)
 logger = logging.getLogger(__name__)
 
-# Only include test router in development
-if ENVIRONMENT == "development":
-    from app.test.routers import router as test_router
+# Remove test router from all environments
 
 app = FastAPI(title="SeatDuty Backend API")
 
@@ -71,11 +70,7 @@ def read_root():
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(admin_router)
+app.include_router(groups_router)
 
-# Only include test router in development
-if ENVIRONMENT == "development":
-    app.include_router(test_router)
-    logger.info("🧪 Test endpoints enabled (development mode)")
-else:
-    logger.info("🔒 Test endpoints disabled (production mode)")
+logger.info("🔒 Test endpoints disabled")
 

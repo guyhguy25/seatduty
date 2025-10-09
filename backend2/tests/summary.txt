@@ -1,0 +1,60 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.13, pytest-8.4.2, pluggy-1.6.0
+rootdir: /app
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.11.0, asyncio-1.2.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 56 items
+
+tests/test_auth.py ................                                      [ 28%]
+tests/test_groups.py ...........................                         [ 76%]
+tests/test_users.py .............                                        [100%]
+
+=============================== warnings summary ===============================
+../usr/local/lib/python3.11/site-packages/passlib/utils/__init__.py:854
+  /usr/local/lib/python3.11/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+../usr/local/lib/python3.11/site-packages/pydantic/_internal/_config.py:323
+../usr/local/lib/python3.11/site-packages/pydantic/_internal/_config.py:323
+../usr/local/lib/python3.11/site-packages/pydantic/_internal/_config.py:323
+../usr/local/lib/python3.11/site-packages/pydantic/_internal/_config.py:323
+../usr/local/lib/python3.11/site-packages/pydantic/_internal/_config.py:323
+  /usr/local/lib/python3.11/site-packages/pydantic/_internal/_config.py:323: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.11/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+../usr/local/lib/python3.11/site-packages/pydantic/fields.py:1062
+../usr/local/lib/python3.11/site-packages/pydantic/fields.py:1062
+  /usr/local/lib/python3.11/site-packages/pydantic/fields.py:1062: PydanticDeprecatedSince20: `min_items` is deprecated and will be removed, use `min_length` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.11/migration/
+    warn('`min_items` is deprecated and will be removed, use `min_length` instead', DeprecationWarning)
+
+server.py:33
+  /app/server.py:33: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event("startup")
+
+../usr/local/lib/python3.11/site-packages/fastapi/applications.py:4574
+  /usr/local/lib/python3.11/site-packages/fastapi/applications.py:4574: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)
+
+tests/test_users.py::TestUsers::test_update_profile_success
+tests/test_users.py::TestUsers::test_update_profile_partial
+tests/test_users.py::TestUsers::test_update_profile_password
+tests/test_users.py::TestUsers::test_update_profile_invalid_email
+tests/test_users.py::TestUsers::test_profile_update_after_password_change
+tests/test_users.py::TestUsers::test_profile_update_after_password_change
+  /app/app/users/crud.py:63: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.11/migration/
+    update_data = user_update.dict(exclude_unset=True)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 56 passed, 16 warnings in 151.26s (0:02:31) ==================

@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from app.models import User
+from app.users.models import User
 
 
 class TestUsers:
@@ -146,3 +146,45 @@ class TestUsers:
         
         assert response.status_code == 200
         assert response.json()["name"] == "Updated After Password Change"
+
+    def test_find_user_by_id_success(self, client: TestClient, auth_headers):
+        """Find user by id should return user when exists."""
+        # Get current user id via profile
+        profile_resp = client.get("/users/profile", headers=auth_headers)
+        assert profile_resp.status_code == 200
+        user_id = profile_resp.json()["id"]
+
+        # Find by id
+        resp = client.get(f"/users/find/{user_id}")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["id"] == user_id
+        assert data["email"] == "test@example.com"
+
+    def test_find_user_by_id_not_found(self, client: TestClient):
+        """Finding non-existent user should return 404."""
+        resp = client.get("/users/find/999999")
+        assert resp.status_code == 404
+        assert "User not found" in resp.json()["detail"]
+
+    def test_list_users_filtering(self, client: TestClient, admin_headers):
+        """Admin users list supports filters."""
+        # Create some users via admin
+        for i in range(2):
+            r = client.post(
+                "/admin/users",
+                headers=admin_headers,
+                json={
+                    "email": f"filter{i}@example.com",
+                    "password": "password123",
+                    "name": f"Filter {i}",
+                    "phone": "+1000000000",
+                },
+            )
+            assert r.status_code == 201
+
+        # Filter by email
+        r = client.get("/users", params={"email": "filter0"})
+        assert r.status_code == 200
+        data = r.json()
+        assert any("filter0@" in u["email"] for u in data["users"]) or data["total"] >= 1

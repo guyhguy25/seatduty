@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  test-db:
+    image: postgres:16-alpine
+    container_name: seatduty-test-db
+    environment:
+      - POSTGRES_DB=test_seatduty
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d test_seatduty"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - seatduty-test-network
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: seatduty-test
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@test-db:5432/test_seatduty
+      - ENVIRONMENT=development
+    depends_on:
+      test-db:
+        condition: service_healthy
+    command: ["pytest", "-v"]
+    volumes:
+      - .:/app
+    networks:
+      - seatduty-test-network
+
+networks:
+  seatduty-test-network:
+    driver: bridge
+
+

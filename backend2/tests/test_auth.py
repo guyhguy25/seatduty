@@ -1,8 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from app.models import User
-from app.security import decode_token
+from app.users.models import User
+from app.core.security import decode_token
 
 
 class TestAuth:
@@ -134,6 +134,11 @@ class TestAuth:
         
         assert response.status_code == 200
         assert "Logged out successfully" in response.json()["message"]
+
+    def test_logout_invalid_token(self, client: TestClient):
+        """Logout with invalid token should be 401 or 400 depending on impl."""
+        response = client.post("/auth/logout", json={"refresh_token": "invalid"})
+        assert response.status_code in (400, 401)
 
     def test_forgot_password_success(self, client: TestClient, test_user):
         """Test successful forgot password."""

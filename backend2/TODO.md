@@ -61,6 +61,9 @@ Complete redesign of the backend system for seat duty management, including user
   - Profile setup (name, phone, preferences)
   - Password reset functionality
 
+- [ ] **Change to Phone Number**
+  - Remove Email
+
 - [x] **Authentication System**
   - JWT token implementation
   - Session management
@@ -76,19 +79,19 @@ Complete redesign of the backend system for seat duty management, including user
 ## 👥 Group Management System
 
 ### Group Operations
-- [ ] **Group Registration**
+- [x] **Group Registration**
   - Create new groups
   - Set group name and description
   - Assign group admin during creation
   - Group settings configuration
 
-- [ ] **Group Administration**
+- [x] **Group Administration**
   - Admin permissions and controls
   - Member management (add/remove)
   - Group settings updates
   - Group deletion and archival
 
-- [ ] **Group Membership**
+- [x] **Group Membership**
   - Join/leave group functionality
   - Member role assignment
   - Membership status tracking
@@ -97,13 +100,13 @@ Complete redesign of the backend system for seat duty management, including user
 ## 📧 Invitation System
 
 ### Invitation Management
-- [ ] **Send Invitations**
-  - Email-based invitations
+- [x] **Send Invitations**
+  - Token-based invitations (no email)
   - Invitation message customization
   - Bulk invitation sending
   - Invitation tracking and status
 
-- [ ] **Accept/Decline Invitations**
+- [x] **Accept/Decline Invitations**
   - Invitation response handling
   - Automatic group joining on acceptance
   - Invitation expiration management
@@ -303,23 +306,22 @@ ALTER TABLE games ADD COLUMN last_updated TIMESTAMP;
 - [x] `DELETE /users/account` - Delete user account
 
 ### Group Management Endpoints
-- [ ] `POST /groups` - Create new group
-- [ ] `GET /groups` - List user's groups
-- [ ] `GET /groups/{id}` - Get group details
-- [ ] `PUT /groups/{id}` - Update group
-- [ ] `DELETE /groups/{id}` - Delete group
-- [ ] `POST /groups/{id}/members` - Add member
-- [ ] `DELETE /groups/{id}/members/{userId}` - Remove member
+- [x] `POST /groups` - Create new group
+- [x] `GET /groups` - List user's groups
+- [x] `GET /groups/{id}` - Get group details
+- [x] `DELETE /groups/{id}` - Delete group
+- [x] `GET /groups/{id}/members` - List group members
+- [x] `POST /groups/{id}/admins/{user_id}` - Add admin
+- [x] `DELETE /groups/{id}/members/{user_id}` - Remove member
+- [x] `DELETE /groups/{id}/leave` - Leave group
 
 ### Invitation Endpoints
-- [ ] `POST /groups/{id}/invitations` - Send invitation
-- [ ] `GET /invitations` - List user invitations
-- [ ] `POST /invitations/{id}/accept` - Accept invitation
-- [ ] `POST /invitations/{id}/decline` - Decline invitation
-- [ ] `DELETE /invitations/{id}` - Cancel invitation
+- [x] `POST /groups/{id}/invites` - Create invite token
+- [x] `POST /groups/join/{token}` - Join with token
+- [x] `POST /groups/invites/{token}/revoke` - Revoke invite
 
 ### Club Association Endpoints
-- [ ] `GET /clubs` - List available clubs
+- [x] `GET /groups/clubs` - List available clubs (from 365scores)
 - [ ] `GET /clubs/{id}` - Get club details
 - [ ] `POST /groups/{id}/club` - Associate group with club
 - [ ] `DELETE /groups/{id}/club` - Remove club association
@@ -344,13 +346,13 @@ ALTER TABLE games ADD COLUMN last_updated TIMESTAMP;
 ## 🧪 Testing & Quality Assurance
 
 ### Testing Strategy
-- [ ] **Unit Tests**
+- [x] **Unit Tests**
   - Database operations testing
   - Business logic validation
   - API endpoint testing
   - Error handling verification
 
-- [ ] **Integration Tests**
+- [x] **Integration Tests**
   - End-to-end workflow testing
   - Database integration testing
   - External API integration
@@ -415,9 +417,35 @@ ALTER TABLE games ADD COLUMN last_updated TIMESTAMP;
 
 ---
 
+## ✅ Recently Completed Features
+
+### Group Management System (COMPLETED)
+- ✅ Group creation with 2-group limit per user
+- ✅ Group deletion (creator/admin only)
+- ✅ Member management (add/remove/leave)
+- ✅ Admin promotion system
+- ✅ Token-based invitations (no email)
+- ✅ WhatsApp-like group behavior
+- ✅ Club integration with 365scores API
+- ✅ Comprehensive test coverage
+
+### User Management (COMPLETED)
+- ✅ User registration and authentication
+- ✅ Profile management
+- ✅ Admin user management
+- ✅ Superuser promotion system
+- ✅ Account deletion
+
+### API Endpoints (COMPLETED)
+- ✅ All authentication endpoints
+- ✅ All user management endpoints
+- ✅ All group management endpoints
+- ✅ All invitation endpoints
+- ✅ Club fetching endpoints
+
 ## Priority Levels
-- 🔴 **High Priority**: Core functionality (Users, Groups, Authentication)
-- 🟡 **Medium Priority**: Advanced features (Invitations, Club Association)
+- 🔴 **High Priority**: Core functionality (Users, Groups, Authentication) ✅
+- 🟡 **Medium Priority**: Advanced features (Invitations, Club Association) ✅
 - 🟢 **Low Priority**: Nice-to-have features (Analytics, Advanced Settings)
 
 ## Estimated Timeline

@@ -37,6 +37,8 @@ class UserList(BaseModel):
     limit: int
 
 
+
+
 class UserSearch(BaseModel):
     email: Optional[str] = None
     name: Optional[str] = None
@@ -51,5 +53,13 @@ class UserBulkDelete(BaseModel):
 
 class UserBulkUpdate(BaseModel):
     user_ids: List[int] = Field(min_items=1)
+    is_active: Optional[bool] = None
+    is_superuser: Optional[bool] = None
+
+
+class AdminUserUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    password: Optional[str] = Field(default=None, min_length=6)
     is_active: Optional[bool] = None
     is_superuser: Optional[bool] = None
